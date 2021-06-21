@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next"
 import { Readable } from 'stream'
 import Stripe from "stripe";
-import { stripe } from "../../../services/stripe"
-import { saveSubscription } from "../_lib/manageSubscription";
+import { stripe } from "../../services/stripe"
+import { saveSubscription } from "./_lib/manageSubscription";
 
 async function buffer(readable: Readable) {
   const chunks = [];
@@ -62,7 +62,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
     }
 
-    res.json({ received: true })
+    res.status(200).json({ received: true })
   } else {
     res.setHeader('Allow', 'POST')
     res.status(405).end('Method not allowed')
