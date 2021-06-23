@@ -1,7 +1,22 @@
 import Head from 'next/head';
 import styles from './styles.module.scss';
+import Prismic from '@prismicio/client'
+import { RichText } from 'prismic-dom'
+import { getPrismicClient } from '../../services/prismic';
+import { GetStaticProps } from 'next';
 
-export default function Posts() {
+type Post = {
+  slug: string;
+  tittle: string;
+  excerpt: string;
+  updatedAt: string;
+};
+
+interface PostsPros {
+  posts: Post[]
+}
+
+export default function Posts({ posts }) {
   return (
     <>
       <Head>
@@ -10,23 +25,45 @@ export default function Posts() {
 
       <main className={styles.container}>
         <div className={styles.posts}>
-          <a href="#">
-            <time>12 de março de 2021</time>
-            <strong>Creating a Monorepo with Lerna asdqooasmd</strong>
-            <p>This collection contains no documents. Fauna stores data in "documents". If you’re coming from another database, the documents in a collection are like the rows in a table. This collection contains no documents. Fauna stores data in "documents". If you’re coming from another database, the documents in a collection are like the rows in a table.</p>
-          </a>
-          <a href="#">
-            <time>12 de março de 2021</time>
-            <strong>Creating a Monorepo with Lerna asdqooasmd</strong>
-            <p>This collection contains no documents. Fauna stores data in "documents". If you’re coming from another database, the documents in a collection are like the rows in a table. This collection contains no documents. Fauna stores data in "documents". If you’re coming from another database, the documents in a collection are like the rows in a table.</p>
-          </a>
-          <a href="#">
-            <time>12 de março de 2021</time>
-            <strong>Creating a Monorepo with Lerna asdqooasmd</strong>
-            <p>This collection contains no documents. Fauna stores data in "documents". If you’re coming from another database, the documents in a collection are like the rows in a table. This collection contains no documents. Fauna stores data in "documents". If you’re coming from another database, the documents in a collection are like the rows in a table.</p>
-          </a>
+          {posts.map(post => (
+            <a key={post.slug} href="#">
+              <time>{post.updatedAt}</time>
+              <strong>{post.title}</strong>
+              <p>{post.excerpt}</p>
+            </a>
+          ))}
         </div>
       </main>
     </>
   );
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient()
+
+  const response = await prismic.query([
+    Prismic.predicates.at('document.type', 'publication')
+  ], {
+    fetch: ['publication.title', 'publication.content'],
+    pageSize: 100,
+  })
+
+  const posts = response.results.map(post => {
+    return {
+      slug: post.uid,
+      title: RichText.asText(post.data.title),
+      excerpt: post.data.content.find(content => content.type === 'paragraph')?.text ?? '',
+      updatedAt: new Date(post.last_publication_date).toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      })
+    };
+  });
+
+  return {
+    props: {
+      posts
+    }
+  }
 }
