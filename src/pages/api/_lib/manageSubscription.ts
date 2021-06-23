@@ -21,7 +21,7 @@ export async function saveSubscription(
 )
   const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
-  const subscriptionData = {
+  const data = {
     id: subscription.id,
     userId: userRef,
     status: subscription.status,
@@ -32,7 +32,7 @@ export async function saveSubscription(
     await fauna.query(
       q.Create(
         q.Collection('subscriptions'),
-       { data: subscriptionData }
+       { data }
       )
     )
   } else {
@@ -47,7 +47,7 @@ export async function saveSubscription(
             )
           )
         ),
-        { data: subscriptionData }
+        { data }
       )
     )
   }
