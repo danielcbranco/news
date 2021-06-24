@@ -9,16 +9,16 @@ import { GetStaticProps } from 'next';
 
 type Post = {
   slug: string;
-  tittle: string;
+  title: string;
   excerpt: string;
   updatedAt: string;
 };
 
-interface PostsPros {
+interface PostsProps {
   posts: Post[]
 }
 
-export default function Posts({ posts }) {
+export default function Posts({ posts }: PostsProps) {
   return (
     <>
       <Head>
@@ -27,7 +27,7 @@ export default function Posts({ posts }) {
 
       <main className={styles.container}>
         <div className={styles.posts}>
-          {posts.map(post => (
+          {posts.map((post) => (
             <Link href={`/posts/${post.slug}`}>
               <a key={post.slug}>
                 <time>{post.updatedAt}</time>
@@ -52,16 +52,19 @@ export const getStaticProps: GetStaticProps = async () => {
     pageSize: 100,
   })
 
-  const posts = response.results.map(post => {
+  const posts = response.results.map((post) => {
     return {
       slug: post.uid,
       title: RichText.asText(post.data.title),
       excerpt: post.data.content.find(content => content.type === 'paragraph')?.text ?? '',
-      updatedAt: new Date(post.last_publication_date).toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-      })
+      updatedAt: new Date(post.last_publication_date).toLocaleDateString(
+        'pt-BR',
+        {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        }
+      ),
     };
   });
 
